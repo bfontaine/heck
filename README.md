@@ -1,7 +1,7 @@
 # Heck!
 
-<!--
 [![Build Status](https://travis-ci.org/bfontaine/heck.svg?branch=master)](https://travis-ci.org/bfontaine/heck)
+<!--
 [![Coverage Status](https://coveralls.io/repos/bfontaine/heck/badge.svg?branch=master)](https://coveralls.io/r/bfontaine/heck?branch=master)
 -->
 
@@ -25,7 +25,7 @@ numbers are in hexadecimal.
     $ heck
     > 5+5
     A         (10)
-    >  15*2
+    > 15*2
     2A        (42)
     > (CA + FE) * (BA + BE)
     29DC0     (171456)
