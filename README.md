@@ -9,7 +9,7 @@
 
 ## Install
 
-    go get github.com/bfontaine/heck
+    go install github.com/bfontaine/heck
 
 ### Dependencies
 
