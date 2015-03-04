@@ -33,55 +33,57 @@ const (
 )
 
 func isBinop(n OpCode) bool { return begin_binop < n && n < end_binop }
-func isUnop(n OpCode) bool  { return begin_unop < n && n < end_binop }
+func isUnop(n OpCode) bool  { return begin_unop < n && n < end_unop }
 
-func MakeUnop(exe func(int64) int64) Unop          { return Unop{Execute: exe} }
-func MakeBinop(exe func(int64, int64) int64) Binop { return Binop{Execute: exe} }
+func makeUnop(exe func(int64) int64) Unop          { return Unop{Execute: exe} }
+func makeBinop(exe func(int64, int64) int64) Binop { return Binop{Execute: exe} }
 
 var Unops = map[OpCode]Unop{
-	Neg:   MakeUnop(func(a int64) int64 { return -a }),
-	Tilde: MakeUnop(func(a int64) int64 { return ^a }),
+	Neg:   makeUnop(func(a int64) int64 { return -a }),
+	Tilde: makeUnop(func(a int64) int64 { return ^a }),
 }
 var Binops = map[OpCode]Binop{
-	Add:  MakeBinop(func(a, b int64) int64 { return a + b }),
-	Sub:  MakeBinop(func(a, b int64) int64 { return a - b }),
-	Mult: MakeBinop(func(a, b int64) int64 { return a * b }),
-	Div:  MakeBinop(func(a, b int64) int64 { return a / b }),
-	Mod:  MakeBinop(func(a, b int64) int64 { return a % b }),
+	Add:  makeBinop(func(a, b int64) int64 { return a + b }),
+	Sub:  makeBinop(func(a, b int64) int64 { return a - b }),
+	Mult: makeBinop(func(a, b int64) int64 { return a * b }),
+	Div:  makeBinop(func(a, b int64) int64 { return a / b }),
+	Mod:  makeBinop(func(a, b int64) int64 { return a % b }),
 }
 
 var (
-	errStackUnderflow  = errors.New("Stack underflow")
-	errUnknownOperator = errors.New("Unknown operator")
+	ErrStackUnderflow  = errors.New("Stack underflow")
+	ErrUnknownOperator = errors.New("Unknown operator")
 )
 
 type Heck struct {
-	Stack     []int64
-	StackSize int
+	stack     []int64
+	stackSize int
 }
 
 func (h *Heck) pop() (int64, error) {
-	if h.StackSize == 0 {
-		return 0, errStackUnderflow
+	if h.stackSize == 0 {
+		return 0, ErrStackUnderflow
 	}
 
-	h.StackSize--
+	h.stackSize--
 
-	n := h.Stack[h.StackSize]
-	h.Stack = h.Stack[:h.StackSize]
+	n := h.stack[h.stackSize]
+	h.stack = h.stack[:h.stackSize]
 
 	return n, nil
 }
 
 func (h *Heck) push(n int64) {
-	h.Stack = append(h.Stack, n)
-	h.StackSize++
+	h.stack = append(h.stack, n)
+	h.stackSize++
 }
 
+// AddOp adds a new operator to the current expression. The values used by the
+// operator should already be in the stack.
 func (h *Heck) AddOp(op OpCode) (err error) {
 	if isBinop(op) {
 		if b, ok := Binops[op]; !ok {
-			err = errUnknownOperator
+			err = ErrUnknownOperator
 		} else {
 			var e1, e2 int64
 
@@ -97,18 +99,19 @@ func (h *Heck) AddOp(op OpCode) (err error) {
 		}
 	} else if isUnop(op) {
 		if u, ok := Unops[op]; !ok {
-			err = errUnknownOperator
+			err = ErrUnknownOperator
 		} else {
 			e, _ := h.pop()
 			h.push(u.Execute(e))
 		}
 	} else {
-		err = errUnknownOperator
+		err = ErrUnknownOperator
 	}
 
 	return
 }
 
+// AddValue adds a new value to the current expression.
 func (h *Heck) AddValue(s string) error {
 	if v, err := strconv.ParseInt(s, 16, 64); err != nil {
 		return err
@@ -119,27 +122,10 @@ func (h *Heck) AddValue(s string) error {
 	return nil
 }
 
+// Value returns the current expression's value
 func (h *Heck) Value() int64 {
-	return h.Stack[h.StackSize-1]
-}
-
-func (o OpCode) String() (s string) {
-	switch o {
-	case Add:
-		s = "+"
-	case Sub, Neg:
-		s = "-"
-	case Mult:
-		s = "*"
-	case Div:
-		s = "/"
-	case Mod:
-		s = "%"
-	case Tilde:
-		s = "~"
-	default:
-		s = "{?}"
+	if h.stackSize < 1 {
+		return 0
 	}
-
-	return
+	return h.stack[h.stackSize-1]
 }
