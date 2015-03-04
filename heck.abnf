@@ -1,0 +1,18 @@
+e = sp e1
+
+e1 = e2 *( add e2 / minus e2 )
+
+e2 = e3 *( mult e3 / div e3 / mod e3 )
+
+e3 = minus value / tilde value / value
+
+value = 1*HEXDIG / "(" sp e1 sp ")" sp
+
+add = "+" sp
+minus = "-" sp
+tilde = "~" sp
+mult = "*" sp
+div = "/" sp
+mod = "%" sp
+
+sp = 1*WSP
