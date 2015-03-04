@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestEnv(t *testing.T) {
+func TestHeck(t *testing.T) {
 	g := goblin.Goblin(t)
 
 	o.RegisterFailHandler(func(m string, _ ...int) { g.Fail(m) })
